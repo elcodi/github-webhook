@@ -1,0 +1,22 @@
+{
+    "name": "elcodi/github-webhook",
+    "description": "Webhook to trigger elcodi repo split & push",
+    "require": {
+        "symfony/process": "2.5.*",
+        "symfony/http-foundation": "2.5.*",
+        "monolog/monolog": "~1.7",
+        "symfony/filesystem": "2.5.*"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Aldo Chiecchia",
+            "email": "zimage@tiscali.it"
+        },
+        {
+            "name": "Marc Morera",
+            "email": "yuhu@mmoreram.com"
+        }
+    ],
+    "minimum-stability": "dev"
+}
