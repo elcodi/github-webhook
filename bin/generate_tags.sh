@@ -31,13 +31,13 @@ for i in $(ls -1 symfony.Elcodi.tmp/src/Elcodi/); do
         # Removing local tag
         git tag -d $v
         # Removing remote tag
-        git push --tags origin :$v
+        git push origin :$v
         # Moving to filtered branch
         git checkout branch-$v
         # Creating tag pointing to temporary branch HEAD
         git tag $v
         # Push the new reference
-        git push --tags origin $v
+        git push origin $v
 
         # Go back to master and clean the temporary filtered branch
         git checkout master
