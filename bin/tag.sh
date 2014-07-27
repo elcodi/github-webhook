@@ -15,7 +15,7 @@ for i in $(ls -1 elcodi.main_repository/src/Elcodi/); do
     rm -rf elcodi.components.$i
     git clone git@github.com:elcodi/elcodi.git elcodi.components.$i;
     pushd elcodi.components.$i;
-    git tag $1
+    git tag -a $1 -m "created tag $i"
     git push origin tag $1
     pwd
     popd
