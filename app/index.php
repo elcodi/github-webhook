@@ -1,19 +1,30 @@
 <?php
+
+/**
+ * This file is part of the Elcodi package.
+ *
+ * Copyright (c) 2014 Elcodi.com
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ * Feel free to edit as you please, and have fun.
+ *
+ * @author Marc Morera <yuhu@mmoreram.com>
+ * @author Aldo Chiecchia <zimage@tiscali.it>
+ */
+
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Process\Process;
-use Symfony\Component\Process\ProcessBuilder;
 use Predis\Client;
 use Predis\Connection\ConnectionException;
 
 $logFile = __DIR__ . '/../log/github-webhook.log';
 $logger = new Logger('Webhook');
-$logger->pushHandler(new StreamHandler($logFile, Logger::DEBUG)); 
+$logger->pushHandler(new StreamHandler($logFile, Logger::DEBUG));
 
 $ghSecret = getenv('GH_WEBHOOK_SECRET');
 if (!$ghSecret) {
@@ -67,6 +78,26 @@ if ($jsonContent) {
         }
 
         $logger->addInfo("Done queuing split job for commit [$commit]");
+
+    } elseif ('create' === $githubEvent && 'tag' === $jsonContent->ref_type) {
+
+        /**
+         * There is a new tag on the master ref,
+         * we should create new tag in all repos
+         */
+        $tag = $jsonContent->ref;
+        $logger->addInfo("Github event [$githubEvent]. New tag [$tag]. ");
+
+        // Adding $tag to the work queue
+        try {
+            $redis->rpush('github-tag-queue', $tag);
+        } catch (ConnectionException $e) {
+            $logger->addError('Unable to connect to redis: ' . $e->getMessage());
+            exit -1;
+        }
+
+        $logger->addInfo("Done applying tag [$tag]");
+
     }
 } else {
     $logger->addInfo("Could not parse JSON payload");
@@ -79,7 +110,7 @@ if ($jsonContent) {
  * @see http://codereview.stackexchange.com/questions/13512/constant-time-string-comparision-in-php-to-prevent-timing-attacks
  * @see http://rubydoc.info/github/rack/rack/master/Rack/Utils.secure_compare
  *
- * @param string $source      the known string
+ * @param string $original    the known string
  * @param string $destination the string to compare to
  *
  * @return boolean
@@ -101,7 +132,7 @@ function secureCompare($original, $destination)
 
             // At first iteration, value of $yieldResult is irrelevant
             return (
-                is_null($yieldResult) ? true : $yieldResult
+            is_null($yieldResult) ? true : $yieldResult
                 && $currentChar === $originalSplitted[$i]
             );
         }

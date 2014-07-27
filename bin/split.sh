@@ -6,18 +6,24 @@
 # can be achieved by using "subtree split" in git v1.8
 #
 pushd /tmp
-rm -rf symfony.Elcodi.tmp
-git clone git@github.com:elcodi/elcodi.git symfony.Elcodi.tmp
-for i in $(ls -1 symfony.Elcodi.tmp/src/Elcodi/); do
-    rm -rf elcodi.$i
-    git clone git@github.com:elcodi/elcodi.git elcodi.$i;
-    pushd elcodi.$i;
+rm -rf elcodi.split
+mkdir elcodi.split
+pushd elcodi.split
+
+rm -rf elcodi.main_repository
+git clone git@github.com:elcodi/elcodi.git elcodi.main_repository
+for i in $(ls -1 elcodi.main_repository/src/Elcodi/); do
+
+    rm -rf elcodi.components.$i
+    git clone git@github.com:elcodi/elcodi.git elcodi.components.$i;
+    pushd elcodi.components.$i;
     git filter-branch --prune-empty --subdirectory-filter src/Elcodi/$i;
     git remote rm origin
     git remote add origin git@github.com:elcodi/$i.git
     git push origin master
     pwd
     popd
-    rm -rf elcodi.$i
+    rm -rf elcodi.components.$i
 done
-rm -rf /tmp/symfony.Elcodi.tmp
+popd
+rm -rf elcodi.split
