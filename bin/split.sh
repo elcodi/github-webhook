@@ -31,7 +31,7 @@ for i in $(ls -1 src/Elcodi/); do
 
     # Split the main repo according to the subpackage and
     # put the resulting commits in separate branch
-    git subtree split --prefix=src/Elcodi/$i --branch=branch-$i
+    git subtree split -q --prefix=src/Elcodi/$i --branch=branch-$i
 
     # Remove current remote
     git remote rm origin
@@ -43,7 +43,7 @@ for i in $(ls -1 src/Elcodi/); do
     git checkout branch-$i
 
     # Push the filtered commits to remote master
-    git push --dry-run origin branch-$i:master
+    git push origin branch-$i:master
 
     # If a tag exists, we need to create a new one named $TAG
     # pointing to the HEAD of the newly splitted commits and
@@ -64,4 +64,4 @@ for i in $(ls -1 src/Elcodi/); do
     # Go back to HEAD in master of the main repo
     git checkout master
 done
-#rm -rf /tmp/symfony.Elcodi.tmp
+rm -rf /tmp/symfony.Elcodi.tmp

@@ -70,6 +70,9 @@ if ($jsonContent) {
 
         // Adding $commit to the work queue
         addToRedisQueue($redis, $tag, $logger);
+
+    } else {
+        $logger->addInfo("GitHub event [$githubEvent] unknown. Skipping.");
     }
 
 } else {
