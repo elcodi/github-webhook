@@ -39,7 +39,7 @@ while ($poppedValue = $redis->blpop('github-split-queue', 0)) {
 
     $process = (new ProcessBuilder([__DIR__ . '/split.sh']))->getProcess();
     $process->setTimeout(300);
-    $process->run(function($type, $buffer) use ($logger) {
+    $process->run(function ($type, $buffer) use ($logger) {
         if (Process::ERR === $type) {
             $logger->addError($buffer);
         } else {
