@@ -4,16 +4,12 @@ require_once __DIR__ . '/../vendor/autoload.php';
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Process\Process;
-use Symfony\Component\Process\ProcessBuilder;
 use Predis\Client;
 use Predis\Connection\ConnectionException;
 
 $logFile = __DIR__ . '/../log/github-webhook.log';
 $logger = new Logger('Webhook');
-$logger->pushHandler(new StreamHandler($logFile, Logger::DEBUG)); 
+$logger->pushHandler(new StreamHandler($logFile, Logger::DEBUG));
 
 $ghSecret = getenv('GH_WEBHOOK_SECRET');
 if (!$ghSecret) {
@@ -56,21 +52,53 @@ if ($jsonContent) {
          * to the repos
          */
         $commit = $jsonContent->head_commit->id;
-        $logger->addInfo("Github event [$githubEvent]. New commit [$commit] for [{$jsonContent->ref}]. Splitting repository");
+        $logger->addInfo("Github event [$githubEvent]. New commit [$commit] for [{$jsonContent->ref}]. Splitting repository.");
 
         // Adding $commit to the work queue
-        try {
-            $redis->rpush('github-split-queue', $commit);
-        } catch (ConnectionException $e) {
-            $logger->addError('Unable to connect to redis: ' . $e->getMessage());
-            exit -1;
-        }
+        addToRedisQueue($redis, $commit, $logger);
 
         $logger->addInfo("Done queuing split job for commit [$commit]");
+
+    } elseif ("create" == $githubEvent && "tag" == $jsonContent->ref_type) {
+
+        $tag = $jsonContent->ref;
+
+        /*
+         * A tag has been created
+         */
+        $logger->addInfo("Github event [$githubEvent]. Created tag [$tag]. Tagging subrepositories.");
+
+        // Adding $commit to the work queue
+        addToRedisQueue($redis, $tag, $logger);
+
+    } else {
+        $logger->addInfo("GitHub event [$githubEvent] unknown. Skipping.");
     }
+
 } else {
     $logger->addInfo("Could not parse JSON payload");
     exit -1;
+}
+
+/**
+ * Add to redis queue
+ *
+ * @param Client $redis  redis client
+ * @param string $commit any literal indicating a new action in the queue
+ * @param Logger $logger monolog logger
+ *
+ * @throws ConnectionException if redis connection cannot be established
+ */
+function addToRedisQueue($redis, $commit, $logger)
+{
+    try {
+        $redis->rpush('github-split-queue', $commit);
+
+    } catch (ConnectionException $e) {
+
+        $logger->addError('Unable to connect to redis: ' . $e->getMessage());
+        exit -1;
+    }
 }
 
 /**

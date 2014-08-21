@@ -38,7 +38,8 @@ while ($poppedValue = $redis->blpop('github-split-queue', 0)) {
     $logger->addInfo("Starting split process. HEAD commit is [$commit]");
 
     $process = (new ProcessBuilder([__DIR__ . '/split.sh']))->getProcess();
-    $process->run(function($type, $buffer) use ($logger) {
+    $process->setTimeout(300);
+    $process->run(function ($type, $buffer) use ($logger) {
         if (Process::ERR === $type) {
             $logger->addError($buffer);
         } else {
