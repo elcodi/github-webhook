@@ -53,7 +53,7 @@ for i in $(ls -1 src/Elcodi/); do
         git tag -a $TAG -m "Created tag $TAG"
         COMMIT=$(git rev-list HEAD -1)
         echo "Pushing tag $TAG to repo $i as commit $COMMIT"
-        git push --dry-run origin $TAG
+        git push origin $TAG
 
         # Tag must be deleted every time since we do not
         # want to push commits belonging to other subpackages
