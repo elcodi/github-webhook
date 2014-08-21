@@ -6,8 +6,8 @@
 # can be achieved by using "subtree split" in git v1.8
 #
 pushd /tmp
-  ## rm -rf symfony.Elcodi.tmp
-  ## git clone git@github.com:elcodi/elcodi.git symfony.Elcodi.tmp
+rm -rf symfony.Elcodi.tmp
+git clone git@github.com:elcodi/elcodi.git symfony.Elcodi.tmp
 pushd symfony.Elcodi.tmp
 
 # Retrieve the las tag associated to HEAD, if any
