@@ -40,7 +40,7 @@ for i in $(ls -1 src/Elcodi/Bundle/); do
     git checkout branch-$i
 
     # Push the filtered commits to remote master
-    git push --force origin branch-$i:master
+    git push origin branch-$i:master
 
     # If a tag exists, we need to create a new one named $TAG
     # pointing to the HEAD of the newly splitted commits and
@@ -80,7 +80,7 @@ for i in $(ls -1 src/Elcodi/Component/); do
     git checkout branch-$i
 
     # Push the filtered commits to remote master
-    git push --force origin branch-$i:master
+    git push origin branch-$i:master
 
     # If a tag exists, we need to create a new one named $TAG
     # pointing to the HEAD of the newly splitted commits and
