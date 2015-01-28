@@ -102,4 +102,44 @@ for i in $(ls -1 src/Elcodi/Component/); do
     git checkout master
 done
 
+# Split of all existing Plugins
+
+for i in $(ls -1 src/Elcodi/Plugin/); do
+
+    # Split the main repo according to the subpackage and
+    # put the resulting commits in separate branch
+    git subtree split -q --prefix=src/Elcodi/Plugin/$i --branch=branch-$i
+
+    # Remove current remote
+    git remote rm origin
+
+    # Add a remote named after current subpackage
+    git remote add origin git@github.com:elcodi-plugins/$i.git
+
+    # Checkout the recently filtered branch (may be optional)
+    git checkout branch-$i
+
+    # Push the filtered commits to remote master
+    git push origin branch-$i:master
+
+    # If a tag exists, we need to create a new one named $TAG
+    # pointing to the HEAD of the newly splitted commits and
+    # then push it to the subpackage remote
+    if [ "$TAG" != "NOTAG" ]
+    then
+        git tag -a $TAG -m "Created tag $TAG"
+        COMMIT=$(git rev-list HEAD -1)
+        echo "Pushing tag $TAG to repo $i as commit $COMMIT"
+        git push origin $TAG
+
+        # Tag must be deleted every time since we do not
+        # want to push commits belonging to other subpackages
+        # to current subpackage remote
+        git tag -d $TAG
+    fi
+
+    # Go back to HEAD in master of the main repo
+    git checkout master
+done
+
 rm -rf /tmp/symfony.Elcodi.tmp
